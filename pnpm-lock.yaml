@@ -754,7 +754,7 @@ importers:
         version: 0.2.96
       next:
         specifier: ^14.2.5
-        version: 14.2.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 14.2.5(@babel/core@7.24.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       pg:
         specifier: ^8.12.0
         version: 8.12.0
@@ -767,6 +767,9 @@ importers:
       y-codemirror.next:
         specifier: ^0.1.0
         version: 0.1.4(@codemirror/state@0.19.9)(@codemirror/view@0.19.48)(yjs@13.6.18)
+      y-indexeddb:
+        specifier: ^9.0.12
+        version: 9.0.12(yjs@13.6.18)
       y-protocols:
         specifier: 1.0.6
         version: 1.0.6(yjs@13.6.18)
@@ -15321,11 +15324,35 @@ packages:
       }
 
   xtend@4.0.2:
+<<<<<<< HEAD
     resolution:
       {
         integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==,
       }
     engines: { node: ">=0.4" }
+=======
+    resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
+    engines: {node: '>=0.4'}
+
+  y-codemirror.next@0.1.4:
+    resolution: {integrity: sha512-0mekvY+hlqauyqvfXGc4ooT5kHSUIkROzO7WjGoE7pcEvRFhSbGmg1vJFvZcLBCy1KOvSE7NlcO0sKfQWdZenw==}
+    peerDependencies:
+      '@codemirror/state': ^0.19.0
+      '@codemirror/view': ^0.19.0
+      yjs: ^13.5.6
+
+  y-indexeddb@9.0.12:
+    resolution: {integrity: sha512-9oCFRSPPzBK7/w5vOkJBaVCQZKHXB/v6SIT+WYhnJxlEC61juqG0hBrAf+y3gmSMLFLwICNH9nQ53uscuse6Hg==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
+
+  y-protocols@1.0.6:
+    resolution: {integrity: sha512-vHRF2L6iT3rwj1jub/K5tYcTT/mEYDUppgNPXwp8fmLpui9f7Yeq3OEtTLVF012j39QnV+KEQpNqoN7CWU7Y9Q==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
+>>>>>>> 3783b920 (Added idb persistence. Disabled until handling multitab and resume from shape)
 
   y18n@5.0.8:
     resolution:
@@ -23772,6 +23799,26 @@ snapshots:
 
   xtend@4.0.2: {}
 
+<<<<<<< HEAD
+=======
+  y-codemirror.next@0.1.4(@codemirror/state@0.19.9)(@codemirror/view@0.19.48)(yjs@13.6.18):
+    dependencies:
+      '@codemirror/state': 0.19.9
+      '@codemirror/view': 0.19.48
+      lib0: 0.2.96
+      yjs: 13.6.18
+
+  y-indexeddb@9.0.12(yjs@13.6.18):
+    dependencies:
+      lib0: 0.2.96
+      yjs: 13.6.18
+
+  y-protocols@1.0.6(yjs@13.6.18):
+    dependencies:
+      lib0: 0.2.96
+      yjs: 13.6.18
+
+>>>>>>> 3783b920 (Added idb persistence. Disabled until handling multitab and resume from shape)
   y18n@5.0.8: {}
 
   yallist@2.1.2: {}
