@@ -15839,6 +15839,7 @@ snapshots:
   "@babel/traverse@7.25.3":
     dependencies:
 <<<<<<< HEAD
+<<<<<<< HEAD
       '@babel/code-frame': 7.24.7
       '@babel/generator': 7.25.0
       '@babel/parser': 7.25.3
@@ -15846,13 +15847,26 @@ snapshots:
       '@babel/types': 7.25.2
       debug: 4.3.6
 =======
+=======
+>>>>>>> 38b6bac6 (Cherry picked broadcast impl from y-websocket)
       "@babel/code-frame": 7.24.7
       "@babel/generator": 7.25.0
       "@babel/parser": 7.25.3
       "@babel/template": 7.25.0
       "@babel/types": 7.25.2
       debug: 4.3.6(supports-color@5.5.0)
+<<<<<<< HEAD
 >>>>>>> 851d292a (Yjs-codemirror base example)
+=======
+=======
+      '@babel/code-frame': 7.24.7
+      '@babel/generator': 7.25.0
+      '@babel/parser': 7.25.3
+      '@babel/template': 7.25.0
+      '@babel/types': 7.25.2
+      debug: 4.3.6
+>>>>>>> 29eee7ee (Cherry picked broadcast impl from y-websocket)
+>>>>>>> 38b6bac6 (Cherry picked broadcast impl from y-websocket)
       globals: 11.12.0
     transitivePeerDependencies:
       - supports-color
