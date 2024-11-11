@@ -108,6 +108,89 @@ export interface ShapeStreamOptions<T = never> {
   parser?: Parser<T>
 }
 
+
+export class Publisher<T extends Row<unknown> = Row> {
+  readonly #subscribers = new Map<
+    number,
+    [
+      (messages: Message<T>[]) => MaybePromise<void>,
+      ((error: Error) => void) | undefined,
+    ]
+  >()
+  readonly #upToDateSubscribers = new Map<
+    number,
+    [() => void, (error: FetchError | Error) => void]
+  >()
+
+  constructor() {}
+
+  subscribe(
+    callback: (messages: Message<T>[]) => MaybePromise<void>,
+    onError?: (error: FetchError | Error) => void
+  ) {
+    const subscriptionId = Math.random()
+
+    this.#subscribers.set(subscriptionId, [callback, onError])
+
+    return () => {
+      this.#subscribers.delete(subscriptionId)
+    }
+  }
+
+  unsubscribeAll(): void {
+    this.#subscribers.clear()
+  }
+
+  subscribeOnceToUpToDate(
+    callback: () => MaybePromise<void>,
+    error: (err: FetchError | Error) => void
+  ) {
+    const subscriptionId = Math.random()
+
+    this.#upToDateSubscribers.set(subscriptionId, [callback, error])
+
+    return () => {
+      this.#upToDateSubscribers.delete(subscriptionId)
+    }
+  }
+
+  unsubscribeAllUpToDateSubscribers(): void {
+    this.#upToDateSubscribers.clear()
+  }
+
+  protected async publish(messages: Message<T>[]): Promise<void> {
+    await Promise.all(
+      Array.from(this.#subscribers.values()).map(async ([callback, __]) => {
+        try {
+          await callback(messages)
+        } catch (err) {
+          queueMicrotask(() => {
+            throw err
+          })
+        }
+      })
+    )
+  }
+
+  protected sendErrorToSubscribers(error: Error) {
+    this.#subscribers.forEach(([_, errorFn]) => {
+      errorFn?.(error)
+    })
+  }
+
+  protected notifyUpToDateSubscribers() {
+    this.#upToDateSubscribers.forEach(([callback]) => {
+      callback()
+    })
+  }
+
+  protected sendErrorToUpToDateSubscribers(error: FetchError | Error) {
+    this.#upToDateSubscribers.forEach(([_, errorCallback]) =>
+      errorCallback(error)
+    )
+  }
+}
+
 export interface ShapeStreamInterface<T extends Row<unknown> = Row> {
   subscribe(
     callback: (messages: Message<T>[]) => MaybePromise<void>,
@@ -161,6 +244,7 @@ export interface ShapeStreamInterface<T extends Row<unknown> = Row> {
  */
 
 export class ShapeStream<T extends Row<unknown> = Row>
+  extends Publisher<T>
   implements ShapeStreamInterface<T>
 {
   static readonly Replica = {
@@ -197,6 +281,7 @@ export class ShapeStream<T extends Row<unknown> = Row>
   #replica?: Replica
 
   constructor(options: ShapeStreamOptions<GetExtensions<T>>) {
+    super()
     validateOptions(options)
     this.options = { subscribe: true, ...options }
     this.#lastOffset = this.options.offset ?? `-1`
@@ -294,12 +379,12 @@ export class ShapeStream<T extends Row<unknown> = Row>
             // with the newly provided shape handle
             const newShapeHandle = e.headers[SHAPE_HANDLE_HEADER]
             this.#reset(newShapeHandle)
-            await this.#publish(e.json as Message<T>[])
+            await this.publish(e.json as Message<T>[])
             continue
           } else if (e.status >= 400 && e.status < 500) {
             // Notify subscribers
-            this.#sendErrorToUpToDateSubscribers(e)
-            this.#sendErrorToSubscribers(e)
+            this.sendErrorToUpToDateSubscribers(e)
+            this.sendErrorToSubscribers(e)
 
             // 400 errors are not actionable without additional user input,
             // so we exit the loop
@@ -347,9 +432,9 @@ export class ShapeStream<T extends Row<unknown> = Row>
             this.#isUpToDate = true
           }
 
-          await this.#publish(batch)
+          await this.publish(batch)
           if (!prevUpToDate && this.#isUpToDate) {
-            this.#notifyUpToDateSubscribers()
+            this.notifyUpToDateSubscribers()
           }
         }
       }
@@ -358,40 +443,6 @@ export class ShapeStream<T extends Row<unknown> = Row>
     } finally {
       this.#connected = false
     }
-  }
-
-  subscribe(
-    callback: (messages: Message<T>[]) => MaybePromise<void>,
-    onError?: (error: FetchError | Error) => void
-  ) {
-    const subscriptionId = Math.random()
-
-    this.#subscribers.set(subscriptionId, [callback, onError])
-
-    return () => {
-      this.#subscribers.delete(subscriptionId)
-    }
-  }
-
-  unsubscribeAll(): void {
-    this.#subscribers.clear()
-  }
-
-  subscribeOnceToUpToDate(
-    callback: () => MaybePromise<void>,
-    error: (err: FetchError | Error) => void
-  ) {
-    const subscriptionId = Math.random()
-
-    this.#upToDateSubscribers.set(subscriptionId, [callback, error])
-
-    return () => {
-      this.#upToDateSubscribers.delete(subscriptionId)
-    }
-  }
-
-  unsubscribeAllUpToDateSubscribers(): void {
-    this.#upToDateSubscribers.clear()
   }
 
   /** Unix time at which we last synced. Undefined when `isLoading` is true. */
@@ -413,38 +464,6 @@ export class ShapeStream<T extends Row<unknown> = Row>
   /** True during initial fetch. False afterwise.  */
   isLoading(): boolean {
     return !this.isUpToDate
-  }
-
-  async #publish(messages: Message<T>[]): Promise<void> {
-    await Promise.all(
-      Array.from(this.#subscribers.values()).map(async ([callback, __]) => {
-        try {
-          await callback(messages)
-        } catch (err) {
-          queueMicrotask(() => {
-            throw err
-          })
-        }
-      })
-    )
-  }
-
-  #sendErrorToSubscribers(error: Error) {
-    this.#subscribers.forEach(([_, errorFn]) => {
-      errorFn?.(error)
-    })
-  }
-
-  #notifyUpToDateSubscribers() {
-    this.#upToDateSubscribers.forEach(([callback]) => {
-      callback()
-    })
-  }
-
-  #sendErrorToUpToDateSubscribers(error: FetchError | Error) {
-    this.#upToDateSubscribers.forEach(([_, errorCallback]) =>
-      errorCallback(error)
-    )
   }
 
   /**
