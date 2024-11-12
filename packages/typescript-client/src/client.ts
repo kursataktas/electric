@@ -257,18 +257,6 @@ export class ShapeStream<T extends Row<unknown> = Row>
   readonly #fetchClient: typeof fetch
   readonly #messageParser: MessageParser<T>
 
-  readonly #subscribers = new Map<
-    number,
-    [
-      (messages: Message<T>[]) => MaybePromise<void>,
-      ((error: Error) => void) | undefined,
-    ]
-  >()
-  readonly #upToDateSubscribers = new Map<
-    number,
-    [() => void, (error: FetchError | Error) => void]
-  >()
-
   #lastOffset: Offset
   #liveCacheBuster: string // Seconds since our Electric Epoch 😎
   #lastSyncedAt?: number // unix time
@@ -310,6 +298,10 @@ export class ShapeStream<T extends Row<unknown> = Row>
 
   get shapeHandle() {
     return this.#shapeHandle
+  }
+
+  get lastOffset() {
+    return this.#lastOffset
   }
 
   get isUpToDate() {
