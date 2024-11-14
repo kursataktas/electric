@@ -72,3 +72,13 @@ If you don't consume this publication, the WAL can fill up and your Postgres dat
 ##### Solution &mdash; run Electric
 
 The simplest way to avoid this is to make sure you're running the Electric sync service against Postgres. This will consume the publication and allow the WAL to be released.
+
+### Missing headers &mdash; why is the client complaining about missing headers?
+
+When Electric responds to shape requests it includes headers that are required by the client to follow the shape log.
+It is common to run Electric behind a proxy to authenticate users and authorise shape requests.
+However, the proxy might not keep the response headers in which case the client may complain about missing headers.
+
+##### Solution &mdash; configure proxy to keep headers
+
+Verify the proxy configuration and make sure it doesn't remove any of the `electric-...` headers.
