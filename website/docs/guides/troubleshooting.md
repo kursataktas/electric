@@ -75,10 +75,18 @@ The simplest way to avoid this is to make sure you're running the Electric sync 
 
 ### Missing headers &mdash; why is the client complaining about missing headers?
 
-When Electric responds to shape requests it includes headers that are required by the client to follow the shape log.
-It is common to run Electric behind a proxy to authenticate users and authorise shape requests.
-However, the proxy might not keep the response headers in which case the client may complain about missing headers.
+When Electric responds to shape requests it includes headers in the response that the client needs in order to function. It's common to run Electric behind a proxy. However, some proxies might not pass through the response headers. In this case, the client will complain about missing headers.
 
-##### Solution &mdash; configure proxy to keep headers
+##### Solution &mdash; pass through the response headers
 
-Verify the proxy configuration and make sure it doesn't remove any of the `electric-...` headers.
+Make sure that the headers in the response from Electric are passed-through to / copied onto the response that the proxy sends to the client. It's safest to pass-through / copy all the headers. At a minimum, you **must** pass through any headers prefixed with `electric-`.
+
+### CORS headers &mdash; why are cross-origin requests not working?
+
+Electric also exposes CORS headers. In some cases if a proxy overrides `Access-Control-Expose-Headers` when it responds to an `OPTIONS` request, this may break CORS.
+
+##### Solution &mdash; pass through CORS requests and response headers
+
+The safest thing is to also always make sure you proxy `OPTIONS` requests to Electric and pass through any CORS headers in the response from Electric to the client as well.
+
+If in doubt, pass the headers through!
