@@ -197,6 +197,7 @@ export class Shape<T extends Row<unknown> = Row> {
       this.#error = e
       this.#notify()
     }
+    throw e
   }
 
   #notify(): void {

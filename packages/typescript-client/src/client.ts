@@ -392,6 +392,7 @@ export class ShapeStream<T extends Row<unknown> = Row>
       }
     } catch (err) {
       this.#error = err
+      throw err
     } finally {
       this.#connected = false
     }
