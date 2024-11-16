@@ -8,7 +8,14 @@ import {
 } from './types'
 import { MessageParser, Parser } from './parser'
 import { isUpToDateMessage } from './helpers'
-import { FetchError, FetchBackoffAbortError } from './error'
+import {
+  FetchError,
+  FetchBackoffAbortError,
+  InvalidShapeOptionsError,
+  InvalidSignalError,
+  MissingShapeHandleError,
+  ReservedParamError,
+} from './error'
 import {
   BackoffDefaults,
   BackoffOptions,
@@ -501,12 +508,12 @@ export class ShapeStream<T extends Row<unknown> = Row>
 
 function validateOptions<T>(options: Partial<ShapeStreamOptions<T>>): void {
   if (!options.url) {
-    throw new Error(`Invalid shape options. It must provide the url`)
+    throw new InvalidShapeOptionsError(
+      `Invalid shape options. It must provide the url`
+    )
   }
   if (options.signal && !(options.signal instanceof AbortSignal)) {
-    throw new Error(
-      `Invalid signal option. It must be an instance of AbortSignal.`
-    )
+    throw new InvalidSignalError()
   }
 
   if (
@@ -514,9 +521,17 @@ function validateOptions<T>(options: Partial<ShapeStreamOptions<T>>): void {
     options.offset !== `-1` &&
     !options.shapeHandle
   ) {
-    throw new Error(
-      `shapeHandle is required if this isn't an initial fetch (i.e. offset > -1)`
+    throw new MissingShapeHandleError()
+  }
+
+  // Check for reserved parameter names
+  if (options.params) {
+    const reservedParams = Object.keys(options.params).filter((key) =>
+      RESERVED_PARAMS.has(key)
     )
+    if (reservedParams.length > 0) {
+      throw new ReservedParamError(reservedParams)
+    }
   }
   return
 }
