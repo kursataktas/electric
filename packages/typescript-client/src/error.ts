@@ -49,10 +49,10 @@ export class FetchBackoffAbortError extends Error {
   }
 }
 
-export class InvalidShapeOptionsError extends Error {
-  constructor(message: string) {
-    super(message)
-    this.name = `InvalidShapeOptionsError`
+export class MissingShapeUrlError extends Error {
+  constructor() {
+    super(`Invalid shape options: missing required url parameter`)
+    this.name = `MissingShapeUrlError`
   }
 }
 
@@ -83,7 +83,7 @@ export class ReservedParamError extends Error {
 
 export class ParserNullValueError extends Error {
   constructor(columnName: string) {
-    super(`Column ${columnName ?? 'unknown'} does not allow NULL values`)
-    this.name = 'ParserNullValueError'
+    super(`Column ${columnName ?? `unknown`} does not allow NULL values`)
+    this.name = `ParserNullValueError`
   }
 }

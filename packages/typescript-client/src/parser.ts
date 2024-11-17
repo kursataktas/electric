@@ -163,7 +163,7 @@ function makeNullableParser<Extensions>(
   return (value: NullableToken) => {
     if (isPgNull(value)) {
       if (!isNullable) {
-        throw new ParserNullValueError(columnName ?? 'unknown')
+        throw new ParserNullValueError(columnName ?? `unknown`)
       }
       return null
     }
