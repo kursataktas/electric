@@ -197,6 +197,7 @@ export class ShapeStream<T extends Row<unknown> = Row>
     DEFAULT: `default` as Replica,
   }
 
+  readonly options: ShapeStreamOptions<GetExtensions<T>>
   #isRunning = false
   #error: unknown = null
 
@@ -225,7 +226,7 @@ export class ShapeStream<T extends Row<unknown> = Row>
   #schema?: Schema
   #replica?: Replica
 
-  constructor(private options: ShapeStreamOptions<GetExtensions<T>>) {
+  constructor(options: ShapeStreamOptions<GetExtensions<T>>) {
     this.options = { subscribe: true, autoStart: true, ...options }
     validateOptions(this.options)
     this.#lastOffset = this.options.offset ?? `-1`
