@@ -40,12 +40,14 @@ export const testWithDbClient = test.extend<{
   clearShape: async ({}, use) => {
     use(async (table: string, shapeHandle?: string) => {
       const baseUrl = inject(`baseUrl`)
-      const resp = await fetch(
-        `${baseUrl}/v1/shape?table=${table}${shapeHandle ? `&handle=${shapeHandle}` : ``}`,
-        {
-          method: `DELETE`,
-        }
-      )
+      const url = new URL(`${baseUrl}/v1/shape`)
+      url.searchParams.set(`table`, table)
+      if (shapeHandle) {
+        url.searchParams.set(`handle`, shapeHandle)
+      }
+      const resp = await fetch(url.toString(), {
+        method: `DELETE`,
+      })
       if (!resp.ok) {
         console.error(
           await FetchError.fromResponse(
