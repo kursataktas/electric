@@ -101,6 +101,7 @@ export interface ShapeStreamOptions<T = never> {
    * usage and so is not recommended.
    */
   replica?: Replica
+
   /**
    * The "offset" on the shape log. This is typically not set as the ShapeStream
    * will handle this automatically. A common scenario where you might pass an offset
@@ -110,12 +111,12 @@ export interface ShapeStreamOptions<T = never> {
    * so it knows at what point in the shape to catch you up from.
    */
   offset?: Offset
+
   /**
    * Similar to `offset`, this isn't typically used unless you're maintaining
    * a cache of the shape log.
    */
-  shapeHandle?: string
-  backoffOptions?: BackoffOptions
+  handle?: string
 
   /**
    * HTTP headers to attach to requests made by the client.
@@ -136,8 +137,10 @@ export interface ShapeStreamOptions<T = never> {
    * shape and stop, pass false.
    */
   subscribe?: boolean
+
   signal?: AbortSignal
   fetchClient?: typeof fetch
+  backoffOptions?: BackoffOptions
   parser?: Parser<T>
 }
 
@@ -235,7 +238,7 @@ export class ShapeStream<T extends Row<unknown> = Row>
     this.options = { subscribe: true, ...options }
     this.#lastOffset = this.options.offset ?? `-1`
     this.#liveCacheBuster = ``
-    this.#shapeHandle = this.options.shapeHandle
+    this.#shapeHandle = this.options.handle
     this.#databaseId = this.options.databaseId
     this.#messageParser = new MessageParser<T>(options.parser)
     this.#replica = this.options.replica
@@ -508,10 +511,10 @@ export class ShapeStream<T extends Row<unknown> = Row>
    * Resets the state of the stream, optionally with a provided
    * shape handle
    */
-  #reset(shapeHandle?: string) {
+  #reset(handle?: string) {
     this.#lastOffset = `-1`
     this.#liveCacheBuster = ``
-    this.#shapeHandle = shapeHandle
+    this.#shapeHandle = handle
     this.#isUpToDate = false
     this.#connected = false
     this.#schema = undefined
@@ -528,13 +531,9 @@ function validateOptions<T>(options: Partial<ShapeStreamOptions<T>>): void {
     )
   }
 
-  if (
-    options.offset !== undefined &&
-    options.offset !== `-1` &&
-    !options.shapeHandle
-  ) {
+  if (options.offset !== undefined && options.offset !== `-1` && !options.handle) {
     throw new Error(
-      `shapeHandle is required if this isn't an initial fetch (i.e. offset > -1)`
+      `handle is required if this isn't an initial fetch (i.e. offset > -1)`
     )
   }
 
